@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sthy.dao.IManageDao">
+
+	<select id="login" resultType="com.sthy.pojo.User" parameterType="com.sthy.pojo.User">
+		SELECT * FROM t_user_info WHERE 1=1 AND username = #{username}
+	</select>
+	
+	<update id="editPassword" parameterType="com.sthy.pojo.User">
+		UPDATE 
+			t_user_info
+		SET	
+			password = #{password}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="queryMenuList" resultType="Map" parameterType="com.sthy.pojo.Menu">
+		SELECT 
+			t1.* 
+		FROM 
+			`t_menu_info` t1 
+		ORDER BY t1.num 
+	</select>
+	
+	<select id="queryMenuListByRole" resultType="Map" parameterType="com.sthy.pojo.Menu">
+		SELECT 
+			t1.* 
+		FROM 
+			`t_menu_info` t1 
+		LEFT JOIN 
+			`t_role_menu_rec` t2 
+		ON t1.`id` = t2.`menu_id` 
+		WHERE 1=1
+			<if test=" role_id != null and role_id != '' ">
+				AND t2.role_id = #{role_id}
+			</if>
+		ORDER BY t1.num 
+	</select>
+	<insert id="addRoleMenuRec" parameterType="Map">
+		INSERT INTO t_role_menu_rec
+			(menu_id,role_id)
+		VALUES
+			(#{menu_id}, #{role_id})
+	</insert>
+	<delete id="delRoleMenuRec" parameterType="com.sthy.pojo.Role">
+		DELETE FROM t_role_menu_rec WHERE role_id = #{id}
+	</delete>
+	
+	<sql id="limit">
+		limit ${page.pageStart}, ${page.pageSize}
+	</sql>
+	
+	<!--Start:language -->
+	<select id="queryLanguageList" resultType="com.sthy.pojo.Language" parameterType="Map">
+		SELECT * FROM `t_language_info` 
+		WHERE 1=1 
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+		ORDER BY num 
+	</select>
+	<select id="queryLanguagePageList" resultType="com.sthy.pojo.Language" parameterType="Map">
+		SELECT * FROM `t_language_info` WHERE 1=1 ORDER BY num 
+		<include refid="limit"/>
+	</select>
+	<select id="queryLanguagePageListCount" resultType="Integer" parameterType="Map">
+		SELECT count(*) FROM `t_language_info` WHERE 1=1 ORDER BY num 
+	</select>
+	
+	<insert id="addLanguage" parameterType="com.sthy.pojo.Language">
+		INSERT INTO t_language_info
+			(name, num, locale)
+		VALUES
+			(#{name}, #{num}, #{locale})
+	</insert>
+	<update id="editLanguage" parameterType="com.sthy.pojo.Language">
+		UPDATE 
+			t_language_info
+		SET
+			name = #{name},
+			num = #{num},
+			locale = #{locale}
+		WHERE id = #{id}
+	</update>
+	<delete id="delLanguage" parameterType="com.sthy.pojo.Language">
+		DELETE FROM t_language_info WHERE id = #{id}
+	</delete>
+	<!--End:language -->
+	
+	<!--Start:slider -->
+	<select id="querySliderList" resultType="com.sthy.pojo.Slider" parameterType="Map">
+		SELECT * FROM `t_slider_info` 
+		WHERE 1=1 
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+		ORDER BY num 
+	</select>
+	<select id="querySliderPageList" resultType="com.sthy.pojo.Slider" parameterType="Map">
+		SELECT * FROM `t_slider_info` WHERE 1=1 ORDER BY num 
+		<include refid="limit"/>
+	</select>
+	<select id="querySliderPageListCount" resultType="Integer" parameterType="Map">
+		SELECT count(*) FROM `t_slider_info` WHERE 1=1 ORDER BY num 
+	</select>
+	
+	<insert id="addSlider" parameterType="com.sthy.pojo.Slider">
+		INSERT INTO t_slider_info
+			(image, num)
+		VALUES
+			(#{image}, #{num})
+	</insert>
+	<update id="editSlider" parameterType="com.sthy.pojo.Slider">
+		UPDATE 
+			t_slider_info
+		SET
+			image = #{image},
+			num = #{num}
+		WHERE id = #{id}
+	</update>
+	<delete id="delSlider" parameterType="com.sthy.pojo.Slider">
+		DELETE FROM t_slider_info WHERE id = #{id}
+	</delete>
+	<!--End:slider -->
+	
+	<!--Start:shop -->
+	<sql id="shopWhere">
+		WHERE 1=1
+			<if test=" locale != null and locale != ''">
+				and t2.locale = #{locale}
+			</if>
+	</sql>
+	<select id="queryShopList" resultType="com.sthy.pojo.Shop" parameterType="Map">
+		SELECT * FROM `t_shop_info` 
+		WHERE 1=1 
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+		ORDER BY id,num 
+	</select>
+	<select id="queryShopPageList" resultType="com.sthy.pojo.Shop" parameterType="Map">
+		SELECT 
+			t1.*,t2.name AS language_name 
+		FROM 
+			`t_shop_info` t1 
+		LEFT JOIN 
+			`t_language_info` t2 
+		ON t1.`language_id`=t2.id
+		<include refid="shopWhere"/>
+		<include refid="limit"/>
+	</select>
+	<select id="queryShopPageListCount" resultType="Integer" parameterType="Map">
+		SELECT 
+			count(*)
+		FROM 
+			`t_shop_info` t1 
+		LEFT JOIN 
+			`t_language_info` t2 
+		ON t1.`language_id`=t2.id
+		<include refid="shopWhere"/>
+	</select>
+	
+	<insert id="addShop" parameterType="com.sthy.pojo.Shop">
+		<selectKey resultType="String" keyProperty="id">  
+	 		SELECT LAST_INSERT_ID()  as id
+		</selectKey> 
+		INSERT INTO t_shop_info
+		(name, language_id, create_time,num, url)
+		VALUES 
+		(#{name}, #{language_id}, #{create_time}, #{num}, #{url})
+	</insert>
+	
+	<update id="editShop" parameterType="com.sthy.pojo.Shop">
+		UPDATE 
+			t_shop_info
+		SET
+			name = #{name},
+			language_id = #{language_id},
+			num = #{num},
+			url = #{url},
+			update_time = #{update_time}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delShop" parameterType="com.sthy.pojo.Shop">
+		UPDATE	
+			t_shop_info
+		SET	
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	<!--End:shop -->
+	
+	<!--Start:shop detail -->
+	<select id="queryShopDetailList" parameterType="Map" resultType="com.sthy.pojo.ShopDetail">
+		SELECT * FROM t_shop_detail_info
+		WHERE 1=1 
+			<if test=" id != null and id != '' ">
+				AND shop_id = #{id}
+			</if>
+	</select>
+	
+	<insert id="addShopDetail" parameterType="com.sthy.pojo.ShopDetail">
+		INSERT INTO t_shop_detail_info
+		(shop_id)
+		VALUES 
+		(#{shop_id})
+	</insert>
+	
+	<update id="editShopDetail" parameterType="com.sthy.pojo.ShopDetail">
+		UPDATE 
+		  `t_shop_detail_info`
+		SET 
+		 	`shop_hours` = #{shop_hours},
+		    `shop_facility` = #{shop_facility},
+		    `shop_notice` = #{shop_notice},
+		    `shop_cancel` = #{shop_cancel},
+		    `shop_desc` = #{shop_desc}
+		WHERE `shop_id` = #{shop_id}
+	</update>
+	<!--End:shop detail -->
+	
+	<!--Start:traffic -->
+	<select id="queryTrafficList" parameterType="Map" resultType="com.sthy.pojo.Traffic">
+		SELECT * FROM t_traffic_info
+		WHERE 1=1 
+		<if test=" id != null and id != ''">
+			AND shop_id = #{id}
+		</if>
+	</select>
+	
+	<insert id="addTraffic" parameterType="com.sthy.pojo.Traffic">
+		INSERT INTO t_traffic_info
+		(shop_id)
+		VALUES 
+		(#{shop_id})
+	</insert>
+	<update id="editTraffic" parameterType="com.sthy.pojo.Traffic">
+		UPDATE
+			t_traffic_info
+		SET
+			t_traffic_info.desc = #{desc}
+		WHERE
+			shop_id = #{shop_id}
+	</update>
+	<!--End:traffic -->
+	
+	<!--Start:shop faq -->
+	<sql id="faqWhere">
+		WHERE 1=1
+			<if test=" shop_id != null and shop_id != ''">
+				and t1.shop_id = #{shop_id}
+			</if>
+			<if test=" queryContent != null and queryContent != ''">
+				and t1.q_content like CONCAT('%',#{queryContent},'%')
+			</if>
+	</sql>
+	<select id="queryFAQPageList" resultType="com.sthy.pojo.Faq" parameterType="Map">
+		SELECT 
+			t1.*,t2.name as shop_name
+		FROM 
+			t_faq t1
+		LEFT JOIN
+			t_shop_info t2
+		ON t1.shop_id = t2.id 
+		<include refid="faqWhere"/>
+		ORDER BY t1.shop_id
+		<include refid="limit"/>
+	</select>
+	<select id="queryFAQPageListCount" resultType="Integer" parameterType="Map">
+		SELECT 
+			count(*)
+		FROM 
+			t_faq t1
+		LEFT JOIN
+			t_shop_info t2
+		ON t1.shop_id = t2.id 
+		<include refid="faqWhere"/>
+	</select>
+	<select id="queryFAQList" resultType="com.sthy.pojo.Faq" parameterType="Map">
+		SELECT 
+			t1.*
+		FROM 
+			t_faq t1
+		WHERE 1=1 
+			<if test=" id != null and id != ''">
+				and t1.id = #{id}
+			</if>
+		ORDER BY t1.shop_id
+	</select>
+	<insert id="addShopFAQ" parameterType="com.sthy.pojo.Faq">
+		INSERT INTO t_faq
+			(q_content, a_content, shop_id)
+		VALUES	
+			(#{q_content}, #{a_content}, #{shop_id})
+	</insert>
+	<update id="editShopFAQ" parameterType="com.sthy.pojo.Faq">
+		UPDATE
+			t_faq
+		SET	
+			q_content = #{q_content},
+			a_content = #{a_content}
+		WHERE id = #{id}
+	</update>
+	<delete id="delShopFAQ" parameterType="com.sthy.pojo.Faq">
+		DELETE FROM t_faq WHERE id = #{id}
+	</delete>
+	<!--End:shop faq -->
+	
+	<!--Start:shop img -->
+	<sql id="imgWhere">
+		WHERE 1=1
+			<if test=" shop_id != null and shop_id != ''">
+				and shop_id = #{shop_id}
+			</if>
+			<if test=" type != null and type != ''">
+				and type = #{type}
+			</if>
+	</sql>
+	<select id="queryShopImgPageList" resultType="com.sthy.pojo.ShopImg" parameterType="Map">
+		SELECT *,(CASE WHEN TYPE = 'aboutus' THEN '关于我们' ELSE '客房预定' END) AS type_name FROM `t_shop_img_info` 
+		<include refid="imgWhere"/>
+		ORDER BY type,num
+		<include refid="limit"/>
+	</select>
+	<select id="queryShopImgPageListCount" resultType="Integer" parameterType="Map">
+		SELECT count(*) AS type_name FROM `t_shop_img_info` 
+		<include refid="imgWhere"/>
+	</select>
+	<select id="queryShopImgById" resultType="com.sthy.pojo.ShopImg" parameterType="Map">
+		SELECT * FROM t_shop_img_info WHERE id = #{id}
+	</select>
+	<insert id="addShopImg" parameterType="com.sthy.pojo.ShopImg">
+		INSERT INTO t_shop_img_info 
+		(name, shop_id, num, type)
+		VALUES
+		(#{name}, #{shop_id}, #{num}, #{type})
+	</insert>
+	<update id="editShopImg" parameterType="com.sthy.pojo.ShopImg">
+		UPDATE
+			t_shop_img_info
+		SET
+			name = #{name},
+			num = #{num},
+			type = #{type}
+		WHERE 
+			id = #{id}
+	</update>
+	<delete id="delShopImg" parameterType="com.sthy.pojo.ShopImg" >
+		DELETE FROM t_shop_img_info WHERE id = #{id}
+	</delete>
+	<!--End:shop -->
+	
+	<!--Start:recruit -->
+	<sql id="recruitWhere">
+		WHERE 1=1
+			<if test=" queryLanaguageId != null and queryLanaguageId != '' ">
+				and t1.language_id = #{queryLanaguageId}
+			</if>
+	</sql>
+	<select id="queryRecruitPageList" parameterType="Map" resultType="com.sthy.pojo.Recruit">
+		SELECT t1.*,t2.name as language_name FROM t_recruit_info t1 left join t_language_info t2 on t1.language_id = t2.id
+		<include refid="recruitWhere"/>
+		ORDER BY t1.language_id asc ,t1.id desc
+		<include refid="limit"/>
+	</select>
+	<select id="queryRecruitPageListCount" parameterType="Map" resultType="Integer">
+		SELECT count(*) FROM t_recruit_info t1 left join t_language_info t2 on t1.language_id = t2.id
+		<include refid="recruitWhere"/>
+	</select>
+	<select id="queryRecruitList" parameterType="Map" resultType="com.sthy.pojo.Recruit">
+		SELECT * FROM t_recruit_info 
+		WHERE 1=1
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+	</select>
+	<insert id="addRecruit" parameterType="com.sthy.pojo.Recruit">
+		INSERT INTO t_recruit_info
+			(title,create_time,language_id,description)
+		VALUES
+			(#{title}, #{create_time}, #{language_id}, #{description})
+	</insert>
+	<update id="editRecruit" parameterType="com.sthy.pojo.Recruit">
+		UPDATE 
+			t_recruit_info 
+		SET
+			title = #{title},
+			language_id = #{language_id},
+			description = #{description}
+		WHERE
+			id = #{id}
+	</update>
+	<delete id="delRecruit" parameterType="com.sthy.pojo.Recruit">
+		DELETE FROM t_recruit_info WHERE id=#{id}
+	</delete>
+	<!--End:recruit -->
+	
+	<!--Start:sale -->
+	<sql id="saleWhere">
+		WHERE 1=1
+			<if test=" queryLanaguageId != null and queryLanaguageId != '' ">
+				and t1.language_id = #{queryLanaguageId}
+			</if>
+	</sql>
+	<select id="querySalePageList" parameterType="Map" resultType="com.sthy.pojo.Sale">
+		SELECT t1.*,t2.name as language_name FROM t_sale_info t1 left join t_language_info t2 on t1.language_id = t2.id
+		<include refid="saleWhere"/>
+		ORDER BY t1.language_id asc ,t1.id desc
+		<include refid="limit"/>
+	</select>
+	<select id="querySalePageListCount" parameterType="Map" resultType="Integer">
+		SELECT count(*) FROM t_sale_info t1 left join t_language_info t2 on t1.language_id = t2.id
+		<include refid="saleWhere"/>
+	</select>
+	<select id="querySaleList" parameterType="Map" resultType="com.sthy.pojo.Sale">
+		SELECT * FROM t_sale_info 
+		WHERE 1=1
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+	</select>
+	<insert id="addSale" parameterType="com.sthy.pojo.Sale">
+		INSERT INTO t_sale_info
+			(title,create_time,language_id,description)
+		VALUES
+			(#{title}, #{create_time}, #{language_id}, #{description})
+	</insert>
+	<update id="editSale" parameterType="com.sthy.pojo.Sale">
+		UPDATE 
+			t_sale_info 
+		SET
+			title = #{title},
+			language_id = #{language_id},
+			description = #{description}
+		WHERE
+			id = #{id}
+	</update>
+	<delete id="delSale" parameterType="com.sthy.pojo.Sale">
+		DELETE FROM t_sale_info WHERE id=#{id}
+	</delete>
+	<!--End:sale -->
+	
+	<!--Start:travel -->
+	<sql id="travelWhere">
+		WHERE 1=1
+			<if test=" queryShopId != null and queryShopId != '' ">
+				and t1.shop_id = #{queryShopId}
+			</if>
+	</sql>
+	<select id="queryTravelPageList" parameterType="Map" resultType="com.sthy.pojo.Travel">
+		SELECT t1.* FROM t_travel_info t1
+		<include refid="travelWhere"/>
+		ORDER BY t1.shop_id asc ,t1.id desc
+		<include refid="limit"/>
+	</select>
+	<select id="queryTravelPageListCount" parameterType="Map" resultType="Integer">
+		SELECT count(*) FROM t_travel_info t1
+		<include refid="travelWhere"/>
+	</select>
+	
+	<select id="queryTravelList" parameterType="Map" resultType="com.sthy.pojo.Travel">
+		SELECT * FROM t_travel_info 
+		WHERE 1=1
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+	</select>
+	<insert id="addTravel" parameterType="com.sthy.pojo.Travel">
+		INSERT INTO t_travel_info
+			(title,create_time,description, num, shop_id)
+		VALUES
+			(#{title}, #{create_time}, #{description}, #{num}, #{shop_id})
+	</insert>
+	<update id="editTravel" parameterType="com.sthy.pojo.Travel">
+		UPDATE 
+			t_travel_info 
+		SET
+			title = #{title},
+			description = #{description},
+			shop_id = #{shop_id},
+			num = #{num}
+		WHERE
+			id = #{id}
+	</update>
+	<delete id="delTravel" parameterType="com.sthy.pojo.Travel">
+		DELETE FROM t_travel_info WHERE id=#{id}
+	</delete>
+	<!--End:travel -->
+	
+	<!--Start:user -->
+	<sql id="userWhere">
+		WHERE 1=1
+	</sql>
+	<select id="queryUserPageList" parameterType="Map" resultType="com.sthy.pojo.User">
+		SELECT t1.*,t2.name as role_name FROM `t_user_info` t1 LEFT JOIN t_role_info t2 on t1.role_id=t2.id
+		<include refid="userWhere"/>
+		ORDER BY t1.id desc
+		<include refid="limit"/>
+	</select>
+	<select id="queryUserPageListCount" parameterType="Map" resultType="Integer">
+		SELECT count(*) FROM t_user_info t1 LEFT JOIN t_role_info t2 on t1.role_id=t2.id
+		<include refid="userWhere"/>
+	</select>
+	<select id="queryUserList" parameterType="Map" resultType="com.sthy.pojo.User">
+		SELECT * FROM `t_user_info` t1
+		WHERE 1=1
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+	</select>
+	<insert id="addUser" parameterType="com.sthy.pojo.User">
+		INSERT INTO t_user_info
+			(username,password,name, role_id, isLock)
+		VALUES
+			(#{username}, #{password}, #{name}, #{role_id}, 1)
+	</insert>
+	<update id="editUser" parameterType="com.sthy.pojo.User">
+		UPDATE 
+			t_user_info 
+		SET
+			username = #{username},
+			password = #{password},
+			name = #{name},
+			role_id = #{role_id}
+		WHERE
+			id = #{id}
+	</update>
+	<delete id="delUser" parameterType="com.sthy.pojo.User">
+		DELETE FROM t_user_info WHERE id=#{id}
+	</delete>
+	<!--End:user -->
+	
+	<!-- Start:role -->
+	<sql id="roleWhere">
+		WHERE 1=1
+	</sql>
+	<select id="queryRolePageList" parameterType="Map" resultType="com.sthy.pojo.Role">
+		SELECT * FROM t_role_info t1
+		<include refid="roleWhere"/>
+		ORDER BY t1.id desc
+		<include refid="limit"/>
+	</select>
+	<select id="queryRolePageListCount" parameterType="Map" resultType="Integer">
+		SELECT COUNT(*) FROM t_role_info t1
+		<include refid="roleWhere"/>
+	</select>
+	<select id="queryRoleList" parameterType="Map" resultType="com.sthy.pojo.Role">
+		SELECT * FROM t_role_info
+		WHERE 1=1
+			<if test=" id != null and id != '' ">
+				and id = #{id}
+			</if>
+	</select>
+	<insert id="addRole" parameterType="com.sthy.pojo.Role">
+		<selectKey resultType="String" keyProperty="id">  
+	 		SELECT LAST_INSERT_ID()  as id
+		</selectKey> 
+		INSERT INTO t_role_info
+			(name)
+		VALUES
+			(#{name})
+	</insert>
+	<update id="editRole" parameterType="com.sthy.pojo.Role">
+		UPDATE 
+			t_role_info 
+		SET
+			name = #{name}
+		WHERE
+			id = #{id}
+	</update>
+	<delete id="delRole" parameterType="com.sthy.pojo.Role">
+		DELETE FROM t_role_info WHERE id=#{id}
+	</delete>
+	<!-- End:role -->
+</mapper>

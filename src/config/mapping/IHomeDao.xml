@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sthy.dao.IHomeDao">
+
+	<select id="querySliderList" parameterType="Map" resultType="com.sthy.pojo.Slider">
+		SELECT * FROM t_slider_info WHERE 1=1 ORDER BY num 
+	</select>
+	
+	<select id="queryShopList" parameterType="Map" resultType="com.sthy.pojo.Shop">
+		SELECT t1.* FROM t_shop_info t1 LEFT JOIN t_language_info t2 ON t1.language_id = t2.id
+		WHERE 1=1  
+			<if test=" locale != null and locale != '' ">
+				and t2.locale = #{locale}
+			</if>
+			and t1.status = 1
+		ORDER BY num 
+	</select>
+	
+	<select id="queryShopImgByShopId" parameterType="Map" resultType="com.sthy.pojo.ShopImg">
+		SELECT * FROM t_shop_img_info
+		WHERE 1=1  
+			<if test=" shop_id != null and shop_id != '' ">
+				and shop_id = #{shop_id}
+			</if>
+			<if test=" type != null and type != '' ">
+				and type = #{type}
+			</if>
+		ORDER BY num 
+	</select>
+	
+	<select id="queryShopDetailByShopId" parameterType="Map" resultType="com.sthy.pojo.ShopDetail">
+		SELECT t1.* FROM t_shop_detail_info t1 
+		WHERE 1=1  
+			<if test=" shop_id != null and shop_id != '' ">
+				and t1.shop_id = #{shop_id}
+			</if>
+	</select>
+	
+	<select id="queryTrafficList" parameterType="Map" resultType="com.sthy.pojo.Traffic">
+		SELECT t1.*,t2.name FROM `t_traffic_info` t1 
+		LEFT JOIN `t_shop_info` t2 ON t1.`shop_id`=t2.`id` 
+		LEFT JOIN t_language_info t3 ON t2.language_id = t3.id
+		WHERE 1=1  
+			<if test=" locale != null and locale != '' ">
+				and t3.locale = #{locale}
+			</if>
+			and t2.status = 1
+		ORDER BY t2.num
+	</select>
+	
+	<select id="queryFaqList" parameterType="Map" resultType="com.sthy.pojo.Faq">
+		SELECT 
+			t1.*
+		FROM
+			`t_faq` t1
+		LEFT JOIN
+			`t_shop_info` t2
+		ON
+			t1.`shop_id`=t2.`id`
+		LEFT JOIN
+			t_language_info t4
+		ON
+			t2.language_id = t4.id
+		WHERE 1=1
+			<if test=" locale != null and locale != '' ">
+				and t4.locale = #{locale}
+			</if>
+			<if test=" shop_id != null and shop_id != '' ">
+				and t1.shop_id = #{shop_id}
+			</if>
+			and t2.status = 1
+	</select>
+	
+	<sql id="limit">
+		limit ${page.pageStart}, ${page.pageSize}
+	</sql>
+	
+	<sql id="recruitWhere">
+		WHERE 1=1
+		<if test=" locale != null and locale != '' ">
+			and t2.locale = #{locale}
+		</if>
+	</sql>
+	
+	<select id="queryRecruitPageList" parameterType="Map" resultType="com.sthy.pojo.Recruit">
+		SELECT 
+			t1.id,
+			t1.title,
+			t1.description,
+			str_to_date(t1.create_time, '%Y-%m-%d') as create_time,
+			t1.language_id
+		FROM 
+			t_recruit_info t1
+		LEFT JOIN
+			t_language_info t2
+		ON 
+			t1.language_id = t2.id
+		<include refid="recruitWhere"/>
+		ORDER BY id DESC
+		<include refid="limit"/>
+	</select>
+	
+	<select id="queryRecruitPageListCount" parameterType="Map" resultType="Integer">
+		SELECT 
+			count(*) 
+		FROM 
+			t_recruit_info t1
+		LEFT JOIN
+			t_language_info t2
+		ON 
+			t1.language_id = t2.id
+		<include refid="recruitWhere"/>
+	</select>
+	
+	<select id="queryRecruitList" parameterType="Map" resultType="com.sthy.pojo.Recruit">
+		SELECT 
+			t1.id,
+			t1.title,
+			t1.description,
+			str_to_date(t1.create_time, '%Y-%m-%d') as create_time,
+			t1.language_id
+		FROM 
+			t_recruit_info t1
+		LEFT JOIN
+			t_language_info t2
+		ON 
+			t1.language_id = t2.id
+		WHERE 1=1
+		<if test=" id != null and id != '' ">
+			AND t1.id=#{id}
+		</if>
+		<if test=" locale != null and locale != '' ">
+			AND t2.locale=#{locale}
+		</if>
+	</select>
+	
+	<select id="querySaleList" parameterType="Map" resultType="com.sthy.pojo.Sale">
+		SELECT 
+			t1.id,
+			t1.title,
+			t1.description,
+			str_to_date(t1.create_time, '%Y-%m-%d') as create_time,
+			t1.language_id
+		FROM 
+			t_sale_info t1
+		LEFT JOIN
+			t_language_info t2
+		ON 
+			t1.language_id = t2.id
+		WHERE 1=1
+		<if test=" id != null and id != '' ">
+			AND t1.id=#{id}
+		</if>
+		<if test=" locale != null and locale != '' ">
+			AND t2.locale=#{locale}
+		</if>
+	</select>
+	
+	<select id="queryTravelList" parameterType="Map" resultType="com.sthy.pojo.Travel">
+		SELECT 
+			t1.*
+		FROM 
+			t_travel_info t1
+		WHERE 1=1
+		<if test=" shop_id != null and shop_id != '' ">
+			AND t1.shop_id = #{shop_id}
+		</if>
+		<if test=" id != null and id != '' ">
+			AND t1.id = #{id}
+		</if>
+	</select>
+</mapper>
